@@ -1,0 +1,28 @@
+@php
+  use App\Models\Setting;
+  $logoAlignment = Setting::get('logo_alignment', 'center');
+  $justifyClass = match ($logoAlignment) {
+      'left' => 'justify-start',
+      'right' => 'justify-end',
+      default => 'justify-center',
+  };
+@endphp
+
+<div class="relative flex items-center {{ $justifyClass }} flex-shrink-0 px-3 py-1 my-1">
+  <!-- Logo -->
+  <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2">
+    <x-application-logo aria-hidden="true" class="w-[4.2rem] h-auto" />
+
+    <span class="sr-only">Dashboard</span>
+  </a>
+
+  <!-- Toggle button -->
+  <x-button type="button" icon-only sr-text="Toggle sidebar" variant="secondary" class="absolute right-3"
+    x-show="isSidebarOpen || isSidebarHovered" x-on:click="isSidebarOpen = !isSidebarOpen">
+    <x-icons.menu-fold-right x-show="!isSidebarOpen" aria-hidden="true" class="hidden w-6 h-6 lg:block" />
+
+    <x-icons.menu-fold-left x-show="isSidebarOpen" aria-hidden="true" class="hidden w-6 h-6 lg:block" />
+
+    <x-heroicon-o-x aria-hidden="true" class="w-6 h-6 lg:hidden" />
+  </x-button>
+</div>
