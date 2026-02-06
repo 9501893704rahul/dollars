@@ -50,6 +50,17 @@ Route::get('/setup-database', function () {
     }
 });
 
+// Run pending migrations (for production updates)
+Route::get('/run-migrations', function () {
+    try {
+        \Artisan::call('migrate', ['--force' => true]);
+        $output = \Artisan::output();
+        return '<pre>Migrations completed successfully!<br><br>' . nl2br(htmlspecialchars($output)) . '</pre>';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
+
 Route::middleware('auth')->get('/dashboard', DashboardController::class)->name('dashboard');
 
 Route::middleware('auth')->group(function () {
