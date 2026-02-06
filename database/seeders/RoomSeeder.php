@@ -13,6 +13,13 @@ class RoomSeeder extends Seeder
      */
     public function run(): void
     {
-        Room::factory(5)->create(['is_default' => true]);
+        $defaultRooms = ['Bedroom', 'Kitchen', 'Bathroom', 'Living Room', 'Dining'];
+        
+        foreach ($defaultRooms as $roomName) {
+            Room::firstOrCreate(
+                ['name' => $roomName],
+                ['is_default' => true]
+            );
+        }
     }
 }
