@@ -2,6 +2,54 @@
 
 A comprehensive Laravel-based checklist system designed for Airbnb property management. This system allows property owners to assign housekeepers to specific properties and dates, where they can log in, complete checklists room-by-room, upload timestamped photos, and confirm task completion.
 
+---
+
+## 🚀 PROJECT STATUS - DEVELOPMENT TRACKER
+
+### ✅ COMPLETED FIXES
+
+| # | Task | Status | Description |
+|---|------|--------|-------------|
+| 1 | 404 Error on Checkbox Toggle | ✅ DONE | Investigated - occurs when task/room relationships are invalid. Current implementation handles this correctly. |
+| 2 | Skip Around Rooms | ✅ DONE | Housekeepers can now skip to different rooms without completing previous rooms first. Removed room locking. |
+| 3 | "READ IMPORTANT NOTES" Button | ✅ DONE | Changed "View Instructions" to "READ IMPORTANT NOTES" with bold amber/orange styling. |
+| 4 | Show Image/Video with Instructions | ✅ DONE | Media (images/videos) now display when instructions are expanded. |
+| 5 | Notes Icon Popup & Photo Upload | ✅ DONE | Replaced text input with icon popups. Added camera upload icon with required note. Camera-only capture (no gallery selection). |
+
+---
+
+### ❌ PENDING FIXES (Requires Google API Key)
+
+| # | Task | Status | Description |
+|---|------|--------|-------------|
+| 6 | Google Address Autocomplete | ❌ PENDING | Auto-populate address from Google as user types when entering property address. **Requires Google Places API Key** |
+| 7 | Auto-populate Lat/Long | ❌ PENDING | Automatically fill latitude/longitude from Google Places selection. **Requires Google Places API Key** |
+
+---
+
+### ❌ PENDING ADD-ONS
+
+| # | Task | Status | Description |
+|---|------|--------|-------------|
+| 1 | Admin Upload Media for Tasks | ❌ PENDING | Admin/Owner can upload picture/video examples for each task to show housekeepers how task should be done. |
+| 2 | Housekeeper Room Photos After Completion | ❌ PENDING | After ALL tasks complete, show rooms again for photo uploads. Auto-timestamp in lower right corner. High-res download option, normal res for web. |
+| 3 | Company User Role | ❌ PENDING | New "Company" role that can add/manage owners. Company's housekeepers are separate and not viewable by other owners. |
+| 4 | Generate Completion Report | ❌ PENDING | Nice layout report showing all completed tasks, notes, problem photos, and "after finished" photos. Can be sent via text link and/or email. |
+| 5 | Calendar Integration (iCal) | ❌ PENDING | Link Airbnb, VRBO, Booking.com calendars to properties. Alert on checkout dates and prompt to schedule housekeeper session. |
+| 6 | Improve Home Page | ❌ PENDING | Make landing page more presentable as a sales pitch for the product. |
+
+---
+
+### 📁 KEY FILES MODIFIED
+
+| File | Changes |
+|------|---------|
+| `resources/js/checklist-renderer.js` | Removed room locking, changed button text, added note/photo icon popups |
+| `resources/js/checklist.js` | Added task photo upload handler |
+| `app/Providers/AppServiceProvider.php` | Added HTTPS forcing for production |
+
+---
+
 ## 📋 Features
 
 - **Property & Room Management**: Create and manage properties with multiple rooms
