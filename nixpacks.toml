@@ -1,18 +1,19 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "php82Extensions.xml", "php82Extensions.curl", "php82Extensions.gd", "php82Extensions.zip", "php82Extensions.bcmath", "php82Extensions.intl", "nodejs_18", "npm-9_x"]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_sqlite", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "php82Extensions.xml", "php82Extensions.curl", "php82Extensions.gd", "php82Extensions.zip", "php82Extensions.bcmath", "php82Extensions.intl", "php82Extensions.fileinfo", "nodejs_18", "npm-9_x"]
 
 [phases.install]
 cmds = [
     "composer install --no-dev --optimize-autoloader",
     "npm install",
-    "npm run build"
+    "npm run build",
+    "mkdir -p database",
+    "touch database/database.sqlite"
 ]
 
 [phases.build]
 cmds = [
-    "php artisan config:cache",
-    "php artisan route:cache",
-    "php artisan view:cache"
+    "php artisan config:clear",
+    "php artisan view:clear"
 ]
 
 [start]
