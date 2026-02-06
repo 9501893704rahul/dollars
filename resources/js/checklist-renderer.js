@@ -327,6 +327,7 @@ export default function checklistRenderer(config = {}) {
                                                    name="photos[]"
                                                    multiple
                                                    accept="image/*"
+                                                   capture="environment"
                                                    class="hidden"
                                                    @change="handleFiles($event)" />
                                         </div>

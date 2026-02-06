@@ -20,6 +20,7 @@ use App\Http\Controllers\RoomTaskAttachController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskMediaController;
 use App\Http\Controllers\TaskSuggestionController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -160,6 +161,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/api/sessions/{session}/photos/{photo}', [\App\Http\Controllers\PhotoController::class, 'destroy'])->name('photos.destroy');
 
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+
+    // Completion Reports
+    Route::get('/sessions/{session}/report', [ReportController::class, 'show'])->name('reports.show');
+    Route::get('/sessions/{session}/report/download', [ReportController::class, 'download'])->name('reports.download');
+    Route::post('/sessions/{session}/report/email', [ReportController::class, 'email'])->name('reports.email');
 });
 
 Route::middleware(['auth', 'role:owner|admin'])

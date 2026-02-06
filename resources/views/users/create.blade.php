@@ -98,13 +98,20 @@
                             <option value="">— Select Role —</option>
                             @if (auth()->user()->hasRole('admin'))
                                 <option value="admin" @selected(old('role') === 'admin')>Administrator</option>
+                                <option value="company" @selected(old('role') === 'company')>Company</option>
+                                <option value="owner" @selected(old('role') === 'owner')>Owner</option>
+                            @elseif (auth()->user()->hasRole('company'))
                                 <option value="owner" @selected(old('role') === 'owner')>Owner</option>
                             @endif
                             <option value="housekeeper" @selected(old('role') === 'housekeeper')>Housekeeper</option>
                         </x-form.select>
-                        @if (auth()->user()->hasRole('owner') && !auth()->user()->hasRole('admin'))
+                        @if (auth()->user()->hasRole('owner') && !auth()->user()->hasRole('admin') && !auth()->user()->hasRole('company'))
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 Owners can only create housekeeper users.
+                            </p>
+                        @elseif (auth()->user()->hasRole('company') && !auth()->user()->hasRole('admin'))
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Companies can create owner and housekeeper users.
                             </p>
                         @endif
                         <x-form.error :messages="$errors->get('role')" />

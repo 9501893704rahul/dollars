@@ -14,9 +14,20 @@
                     {{ $session->scheduled_date->format('F j, Y') }}
                 </p>
             </div>
-            @if($session->status !== 'pending')
-                <x-status-badge :status="$session->status" />
-            @endif
+            <div class="flex items-center gap-3">
+                @if($session->status !== 'pending')
+                    <x-status-badge :status="$session->status" />
+                @endif
+                @if($session->status === 'completed')
+                    <a href="{{ route('reports.show', $session) }}" 
+                       class="inline-flex items-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        View Report
+                    </a>
+                @endif
+            </div>
         </div>
     </x-slot>
 

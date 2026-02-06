@@ -105,4 +105,95 @@ class CalendarController extends Controller
             'daySessions' => $daySessions,
         ]);
     }
+
+    /**
+     * Export sessions as iCal format.
+     */
+    public function ical(Request $request)
+    {
+        $u = Auth::user();
+        $acting = $this->actingRole($request);
+        abort_if($acting === 'forbidden', 403);
+
+        // Get sessions for the next 90 days
+        $startDate = now()->toDateString();
+        $endDate = now()->addDays(90)->toDateString();
+
+        $q = CleaningSession::query()
+            ->with(['property:id,name,address,owner_id', 'housekeeper:id,name'])
+            ->whereBetween('scheduled_date', [$startDate, $endDate]);
+
+        if ($acting === 'housekeeper') {
+            $q->where('housekeeper_id', $u->id);
+        } elseif ($acting === 'owner') {
+            $q->whereHas('property', fn($p) => $p->where('owner_id', $u->id));
+        }
+
+        $sessions = $q->orderBy('scheduled_date')->orderBy('scheduled_time')->get();
+
+        // Build iCal content
+        $ical = "BEGIN:VCALENDAR\r\n";
+        $ical .= "VERSION:2.0\r\n";
+        $ical .= "PRODID:-//HK Checklist//Cleaning Sessions//EN\r\n";
+        $ical .= "CALSCALE:GREGORIAN\r\n";
+        $ical .= "METHOD:PUBLISH\r\n";
+        $ical .= "X-WR-CALNAME:Cleaning Sessions\r\n";
+
+        foreach ($sessions as $session) {
+            $uid = 'session-' . $session->id . '@' . parse_url(config('app.url'), PHP_URL_HOST);
+            $dtstart = $session->scheduled_date->format('Ymd');
+            $dtend = $session->scheduled_date->addDay()->format('Ymd');
+
+            // If time is set, use datetime format
+            if ($session->scheduled_time) {
+                $dtstart = $session->scheduled_date->format('Ymd') . 'T' . 
+                           $session->scheduled_time->format('His');
+                $dtend = $session->scheduled_date->format('Ymd') . 'T' . 
+                         $session->scheduled_time->addHours(2)->format('His');
+            }
+
+            $summary = $this->escapeIcal($session->property->name . ' - Cleaning');
+            $description = $this->escapeIcal(
+                "Property: " . $session->property->name . "\n" .
+                "Address: " . ($session->property->address ?? 'N/A') . "\n" .
+                "Housekeeper: " . ($session->housekeeper->name ?? 'N/A') . "\n" .
+                "Status: " . ucfirst($session->status)
+            );
+            $location = $this->escapeIcal($session->property->address ?? '');
+
+            $ical .= "BEGIN:VEVENT\r\n";
+            $ical .= "UID:" . $uid . "\r\n";
+            if ($session->scheduled_time) {
+                $ical .= "DTSTART:" . $dtstart . "\r\n";
+                $ical .= "DTEND:" . $dtend . "\r\n";
+            } else {
+                $ical .= "DTSTART;VALUE=DATE:" . $session->scheduled_date->format('Ymd') . "\r\n";
+                $ical .= "DTEND;VALUE=DATE:" . $session->scheduled_date->addDay()->format('Ymd') . "\r\n";
+            }
+            $ical .= "SUMMARY:" . $summary . "\r\n";
+            $ical .= "DESCRIPTION:" . $description . "\r\n";
+            if ($location) {
+                $ical .= "LOCATION:" . $location . "\r\n";
+            }
+            $ical .= "STATUS:" . ($session->status === 'completed' ? 'COMPLETED' : 'CONFIRMED') . "\r\n";
+            $ical .= "DTSTAMP:" . now()->format('Ymd\THis\Z') . "\r\n";
+            $ical .= "END:VEVENT\r\n";
+        }
+
+        $ical .= "END:VCALENDAR\r\n";
+
+        return response($ical)
+            ->header('Content-Type', 'text/calendar; charset=utf-8')
+            ->header('Content-Disposition', 'attachment; filename="cleaning-sessions.ics"');
+    }
+
+    /**
+     * Escape special characters for iCal format.
+     */
+    private function escapeIcal(string $text): string
+    {
+        $text = str_replace(['\\', ';', ','], ['\\\\', '\\;', '\\,'], $text);
+        $text = str_replace(["\r\n", "\r", "\n"], '\\n', $text);
+        return $text;
+    }
 }

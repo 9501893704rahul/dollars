@@ -35,12 +35,18 @@ class PhotoController extends Controller
             
             $processedHashes[] = $fileHash;
             
+            $capturedAt = now();
             $filename = $file->store('room_photos', 'public');
+            
+            // Apply timestamp overlay to the image (lower right corner)
+            $absolutePath = Storage::disk('public')->path($filename);
+            ImageTimestampService::overlay($absolutePath, $capturedAt);
+            
             $photo    = $session->photos()->create([
                 'room_id'     => $room->id,
                 'path'        => $filename,
-                'captured_at' => now(),
-                // optionally set has_timestamp_overlay = true if your service overlays it
+                'captured_at' => $capturedAt,
+                'has_timestamp_overlay' => true,
             ]);
             $saved[] = [
                 'id'          => $photo->id,

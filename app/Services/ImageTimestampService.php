@@ -19,18 +19,19 @@ class ImageTimestampService
             $manager = new ImageManager(new Driver());
             $image   = $manager->read($absolutePath);
 
-            // Y coordinate: keep within canvas for small images
-            $y = max(28 + 6, $image->height() - 20); // font size + small padding
+            // Position: lower RIGHT corner with padding
+            $x = $image->width() - 20;  // 20px from right edge
+            $y = $image->height() - 20; // 20px from bottom edge
 
-            $text = 'Captured: ' . $when->format('Y-m-d H:i:s T');
+            $text = $when->format('Y-m-d H:i:s');
 
-            $image->text($text, 20, $y, function (FontFactory $font) {
+            $image->text($text, $x, $y, function (FontFactory $font) {
                 // v3 API — size:int, color:string, align/valign strings, stroke(color,width)
                 $font->size(28);
                 $font->color('#ffffff');
-                $font->align('left');
-                $font->valign('bottom');
-                $font->stroke('#000000', 1); // <-- fixed order: color first, then width
+                $font->align('right');   // Align text to the right
+                $font->valign('bottom'); // Align text to the bottom
+                $font->stroke('#000000', 2); // Black stroke for visibility
 
                 // Optional: load a TTF if GD lacks good default font
                 // $font->filename(resource_path('fonts/Inter-Regular.ttf'));
