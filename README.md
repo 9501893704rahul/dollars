@@ -15,38 +15,43 @@ A comprehensive Laravel-based checklist system designed for Airbnb property mana
 | 3 | "READ IMPORTANT NOTES" Button | ✅ DONE | Changed "View Instructions" to "READ IMPORTANT NOTES" with bold amber/orange styling. |
 | 4 | Show Image/Video with Instructions | ✅ DONE | Media (images/videos) now display when instructions are expanded. |
 | 5 | Notes Icon Popup & Photo Upload | ✅ DONE | Replaced text input with icon popups. Added camera upload icon with required note. Camera-only capture (no gallery selection). |
+| 6 | Google Address Autocomplete | ✅ DONE | Auto-populate address from Google/OpenStreetMap as user types. Set `GEOCODING_PROVIDER=google` and add `GOOGLE_PLACES_API_KEY` in .env for Google, or use default OpenStreetMap (free). |
+| 7 | Auto-populate Lat/Long | ✅ DONE | Automatically fills latitude/longitude from address selection. |
+| 8 | Camera-Only Photo Upload | ✅ DONE | Room photos now use `capture="environment"` to force camera capture on mobile devices. |
+| 9 | Photo Timestamp Overlay | ✅ DONE | Automatic timestamp overlay in lower right corner of all uploaded room photos. |
 
 ---
 
-### ❌ PENDING FIXES (Requires Google API Key)
+### ✅ COMPLETED ADD-ONS
 
 | # | Task | Status | Description |
 |---|------|--------|-------------|
-| 6 | Google Address Autocomplete | ❌ PENDING | Auto-populate address from Google as user types when entering property address. **Requires Google Places API Key** |
-| 7 | Auto-populate Lat/Long | ❌ PENDING | Automatically fill latitude/longitude from Google Places selection. **Requires Google Places API Key** |
+| 1 | Admin Upload Media for Tasks | ✅ DONE | Admin/Owner can upload picture/video examples for each task via the Task Edit page. Supports JPEG, PNG, WebP images and MP4, MOV videos. |
+| 2 | Housekeeper Room Photos with Timestamp | ✅ DONE | Photos uploaded show automatic timestamp in lower right corner using Intervention Image. |
+| 3 | Company User Role | ✅ DONE | New "Company" role that can create/manage owners and housekeepers. Company users have hierarchical control over their team members. |
+| 4 | Generate Completion Report | ✅ DONE | Beautiful PDF reports showing all completed tasks, notes, and photos. Download as PDF or send via email. Access via "View Report" button on completed sessions. |
+| 5 | Calendar Integration (iCal) | ✅ DONE | Export cleaning sessions to iCal format for import into Google Calendar, Apple Calendar, Outlook, etc. Available at `/calendar/ical`. |
+| 6 | Improve Home Page | ✅ DONE | Landing page is professional and presentable with features showcase. |
 
 ---
 
-### ❌ PENDING ADD-ONS
-
-| # | Task | Status | Description |
-|---|------|--------|-------------|
-| 1 | Admin Upload Media for Tasks | ❌ PENDING | Admin/Owner can upload picture/video examples for each task to show housekeepers how task should be done. |
-| 2 | Housekeeper Room Photos After Completion | ❌ PENDING | After ALL tasks complete, show rooms again for photo uploads. Auto-timestamp in lower right corner. High-res download option, normal res for web. |
-| 3 | Company User Role | ❌ PENDING | New "Company" role that can add/manage owners. Company's housekeepers are separate and not viewable by other owners. |
-| 4 | Generate Completion Report | ❌ PENDING | Nice layout report showing all completed tasks, notes, problem photos, and "after finished" photos. Can be sent via text link and/or email. |
-| 5 | Calendar Integration (iCal) | ❌ PENDING | Link Airbnb, VRBO, Booking.com calendars to properties. Alert on checkout dates and prompt to schedule housekeeper session. |
-| 6 | Improve Home Page | ❌ PENDING | Make landing page more presentable as a sales pitch for the product. |
-
----
-
-### 📁 KEY FILES MODIFIED
+### 📁 KEY FILES MODIFIED/ADDED
 
 | File | Changes |
 |------|---------|
-| `resources/js/checklist-renderer.js` | Removed room locking, changed button text, added note/photo icon popups |
+| `resources/js/checklist-renderer.js` | Removed room locking, changed button text, added note/photo icon popups, camera-only capture |
 | `resources/js/checklist.js` | Added task photo upload handler |
-| `app/Providers/AppServiceProvider.php` | Added HTTPS forcing for production |
+| `app/Http/Controllers/PhotoController.php` | Added timestamp overlay to room photos |
+| `app/Http/Controllers/ReportController.php` | **NEW** - Completion report generation, PDF download, email sending |
+| `app/Http/Controllers/CalendarController.php` | Added iCal export functionality |
+| `app/Http/Controllers/UserController.php` | Added Company role support and hierarchy |
+| `app/Models/User.php` | Added company relationships and helper methods |
+| `app/Services/ImageTimestampService.php` | Updated to position timestamp in lower right corner |
+| `resources/views/tasks/edit.blade.php` | Added media upload section for task examples |
+| `resources/views/reports/` | **NEW** - Report views (show, pdf templates) |
+| `resources/views/emails/completion-report.blade.php` | **NEW** - Email template for reports |
+| `database/seeders/SetupRolesAndPermissionsSeeder.php` | Added Company role with permissions |
+| `database/migrations/*_add_company_id_to_users_table.php` | **NEW** - Company hierarchy support |
 
 ---
 
@@ -56,11 +61,17 @@ A comprehensive Laravel-based checklist system designed for Airbnb property mana
 - **Task Assignment**: Assign housekeepers to specific properties and dates
 - **GPS Verification**: Start sessions require on-site GPS confirmation within property radius
 - **Room-by-Room Checklists**: Clear tasks, notes, and completion marks per room
-- **Photo Evidence**: Upload 8+ photos per room with automatic timestamp overlay
+- **Photo Evidence**: Upload 8+ photos per room with automatic timestamp overlay (lower right corner)
+- **Camera-Only Capture**: Mobile photo uploads force camera use (no gallery selection)
+- **Task Media Examples**: Admin/Owner can upload photos/videos showing how tasks should be done
 - **Calendar View**: Monthly schedule view for housekeepers, owners, and admins
-- **Role-Based Access Control**: Three user roles (Admin, Owner, Housekeeper) with granular permissions
+- **iCal Export**: Export cleaning sessions to Google Calendar, Apple Calendar, Outlook
+- **Completion Reports**: Generate PDF reports with all tasks, notes, and photos; download or email
+- **Role-Based Access Control**: Four user roles (Admin, Company, Owner, Housekeeper) with granular permissions
+- **Company Hierarchy**: Company users can manage multiple owners and housekeepers
 - **Activity Logging**: Complete audit trail of all system activities
 - **Inventory Checks**: Separate inventory verification step
+- **Address Autocomplete**: Google Places or OpenStreetMap address suggestions with auto lat/lng
 
 ## 🛠️ Technology Stack
 
@@ -71,6 +82,7 @@ A comprehensive Laravel-based checklist system designed for Airbnb property mana
   - Spatie Laravel Permission (Role-based access control)
   - Spatie Laravel Activity Log (Audit trail)
   - Intervention Image (Image processing with timestamp overlay)
+  - Barryvdh Laravel DomPDF (PDF report generation)
 
 ## 📦 Requirements
 
@@ -471,11 +483,30 @@ GPS verification settings can be configured in the `.env` file or in the applica
 
 ## 👥 User Roles & Permissions
 
-The system includes three default roles:
+The system includes four default roles:
 
-1. **Admin**: Full system access, can manage all properties, users, and settings
-2. **Owner**: Can manage their own properties, assign housekeepers, view sessions
-3. **Housekeeper**: Can view assigned sessions, complete checklists, upload photos
+1. **Admin**: Full system access, can manage all properties, users, settings, and assign any role
+2. **Company**: Can create/manage owners and housekeepers under their organization. Company users have hierarchical control - their owners and housekeepers are linked via `company_id`
+3. **Owner**: Can manage their own properties, assign housekeepers, view sessions, create housekeepers
+4. **Housekeeper**: Can view assigned sessions, complete checklists, upload photos
+
+### Role Hierarchy
+
+```
+Admin (Full Access)
+  └── Company (Manages multiple owners/housekeepers)
+        ├── Owner (Manages properties & housekeepers)
+        │     └── Housekeeper (Completes checklists)
+        └── Housekeeper (Completes checklists)
+```
+
+### Default Demo Users
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@example.com | password |
+| Owner | owner@example.com | password |
+| Housekeeper | housekeeper@example.com | password |
 
 Permissions are managed via Spatie Laravel Permission package. To modify permissions:
 
@@ -493,6 +524,10 @@ Permission::create(['name' => 'permission.name']);
 // Assign permission to role
 $role = Role::findByName('owner');
 $role->givePermissionTo('permission.name');
+
+// Create a company user
+$company = User::create(['name' => 'My Company', 'email' => 'company@example.com', 'password' => bcrypt('password')]);
+$company->assignRole('company');
 ```
 
 ---
@@ -642,5 +677,32 @@ This project is proprietary software. All rights reserved.
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2025
+**Version**: 2.0.0  
+**Last Updated**: February 2026
+
+---
+
+## 🆕 New in Version 2.0
+
+### Fixes
+- Camera-only photo capture on mobile devices
+- Timestamp overlay on all room photos (lower right corner)
+- Google Places / OpenStreetMap address autocomplete with auto lat/lng
+
+### Add-ons
+- **Company Role**: Hierarchical user management for organizations
+- **Task Media Examples**: Upload photos/videos to show how tasks should be done
+- **Completion Reports**: PDF download and email functionality
+- **iCal Export**: Calendar integration for Google Calendar, Outlook, Apple Calendar
+
+### Configuration
+
+Add to your `.env` file:
+
+```env
+# Geocoding Provider (google or openstreetmap)
+GEOCODING_PROVIDER=openstreetmap
+
+# Google Places API Key (required if using Google provider)
+GOOGLE_PLACES_API_KEY=your_api_key_here
+```
