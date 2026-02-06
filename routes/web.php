@@ -37,6 +37,19 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Setup route to seed database (run once)
+Route::get('/setup-database', function () {
+    try {
+        \Artisan::call('db:seed', ['--force' => true]);
+        return 'Database seeded successfully! You can now login with:<br>
+        Admin: admin@example.com / password<br>
+        Owner: owner@example.com / password<br>
+        Housekeeper: housekeeper@example.com / password';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
+
 Route::middleware('auth')->get('/dashboard', DashboardController::class)->name('dashboard');
 
 Route::middleware('auth')->group(function () {

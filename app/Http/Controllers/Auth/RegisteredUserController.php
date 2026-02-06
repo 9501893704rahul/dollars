@@ -41,6 +41,11 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Assign default role - owner for new registrations
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            $user->assignRole('owner');
+        }
+
         event(new Registered($user));
 
         Auth::login($user);
