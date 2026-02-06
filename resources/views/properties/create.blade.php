@@ -329,12 +329,36 @@
           @endif
 
           // Initialize Google Places Autocomplete (only if using Google provider)
-          if (this.geocodingProvider === 'google' && typeof google !== 'undefined' && google.maps && google.maps.places) {
+          this.initGooglePlaces();
+        },
+
+        initGooglePlaces() {
+          if (this.geocodingProvider !== 'google') return;
+
+          // Check if Google Maps is already loaded
+          if (typeof google !== 'undefined' && google.maps && google.maps.places) {
             this.autocompleteService = new google.maps.places.AutocompleteService();
-            // Create a dummy div for PlacesService (required)
             const mapDiv = document.createElement('div');
             this.placesService = new google.maps.places.PlacesService(mapDiv);
+            return;
           }
+
+          // Wait for Google Maps to load (it's loaded async)
+          let attempts = 0;
+          const maxAttempts = 50; // 5 seconds max wait
+          const checkGoogle = setInterval(() => {
+            attempts++;
+            if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+              clearInterval(checkGoogle);
+              this.autocompleteService = new google.maps.places.AutocompleteService();
+              const mapDiv = document.createElement('div');
+              this.placesService = new google.maps.places.PlacesService(mapDiv);
+            } else if (attempts >= maxAttempts) {
+              clearInterval(checkGoogle);
+              console.warn('Google Maps failed to load, falling back to OpenStreetMap');
+              this.geocodingProvider = 'openstreetmap';
+            }
+          }, 100);
         },
 
         handleAddressInput() {

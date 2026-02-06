@@ -148,6 +148,7 @@ ${r?'Expression: "'+r+`"
                                                    name="photos[]"
                                                    multiple
                                                    accept="image/*"
+                                                   capture="environment"
                                                    class="hidden"
                                                    @change="handleFiles($event)" />
                                         </div>

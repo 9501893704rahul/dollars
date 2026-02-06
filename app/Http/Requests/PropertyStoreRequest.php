@@ -31,6 +31,11 @@ class PropertyStoreRequest extends FormRequest
                 : ['required', 'integer', Rule::in([$userId])], // For owners, must be their own ID
 
             'attach'       => ['nullable', Rule::in(['none', 'rooms'])],
+
+            // iCal calendar integration URLs
+            'ical_airbnb_url'  => ['nullable', 'url', 'max:500'],
+            'ical_vrbo_url'    => ['nullable', 'url', 'max:500'],
+            'ical_booking_url' => ['nullable', 'url', 'max:500'],
         ];
     }
 

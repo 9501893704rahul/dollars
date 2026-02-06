@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use App\Models\CalendarEvent;
 use App\Models\CleaningSession;
 use App\Models\Property;
 use App\Models\Room;
@@ -125,7 +126,7 @@ class DashboardController extends Controller
             ->limit(10)
             ->get(['id', 'property_id', 'housekeeper_id', 'scheduled_date', 'status']);
 
-        // Housekeeper: today’s assignments
+        // Housekeeper: today's assignments
         $hkTodaySessions = collect();
         if ($u->hasRole('housekeeper')) {
             $hkTodaySessions = CleaningSession::with(['property:id,name'])
@@ -135,12 +136,24 @@ class DashboardController extends Controller
                 ->get(['id', 'property_id', 'scheduled_date', 'status', 'housekeeper_id']);
         }
 
+        // Upcoming checkout alerts (from iCal synced calendars)
+        $checkoutAlerts = collect();
+        if ($acting !== 'housekeeper') {
+            $checkoutAlerts = CalendarEvent::with('property:id,name')
+                ->upcomingCheckouts(2) // Today and tomorrow
+                ->when(!is_null($propIds), fn($q) => $q->whereIn('property_id', $propIds))
+                ->orderBy('end_date')
+                ->limit(10)
+                ->get();
+        }
+
         return view('dashboard', [
             'stats'            => $stats,
             'propertiesMini'   => $propertiesMini,
             'upcomingSessions' => $upcomingSessions,
             'recentSessions'   => $recentSessions,
             'hkTodaySessions'  => $hkTodaySessions,
+            'checkoutAlerts'   => $checkoutAlerts,
             // not used by the blade but handy for debugging/scope badges if needed
             'acting'           => $acting,
         ]);

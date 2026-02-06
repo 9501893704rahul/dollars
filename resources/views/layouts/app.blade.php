@@ -50,6 +50,11 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Google Maps Places API (conditionally loaded for address autocomplete) -->
+    @if(config('services.google.places_api_key'))
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.places_api_key') }}&libraries=places&loading=async" async defer></script>
+    @endif
 </head>
 
 <body class="font-sans antialiased">

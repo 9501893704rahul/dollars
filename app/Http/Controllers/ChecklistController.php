@@ -204,19 +204,29 @@ class ChecklistController extends Controller
     {
         $propertyId = $session->property_id;
 
-        abort_unless(
-            $room->properties()->where('properties.id', $propertyId)->exists(),
-            404
-        );
+        if (!$room->properties()->where('properties.id', $propertyId)->exists()) {
+            if (request()->expectsJson()) {
+                abort(response()->json([
+                    'success' => false,
+                    'message' => 'Room not found for this session property.'
+                ], 404));
+            }
+            abort(404, 'Room not found for this session property.');
+        }
     }
 
     /** Ensure the given task is attached to the given room (room_task pivot). */
     private function assertTaskAttachedToRoom(Task $task, Room $room): void
     {
-        abort_unless(
-            $room->tasks()->where('tasks.id', $task->id)->exists(),
-            404
-        );
+        if (!$room->tasks()->where('tasks.id', $task->id)->exists()) {
+            if (request()->expectsJson()) {
+                abort(response()->json([
+                    'success' => false,
+                    'message' => 'Task not attached to this room.'
+                ], 404));
+            }
+            abort(404, 'Task not attached to this room.');
+        }
     }
 
     /**

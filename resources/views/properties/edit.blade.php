@@ -235,6 +235,57 @@
                 </div>
             </div>
 
+            {{-- Calendar Integration (iCal feeds) --}}
+            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 max-w-full overflow-hidden">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    Calendar Integration
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Link your property calendars from Airbnb, VRBO, or Booking.com to receive checkout alerts and auto-schedule housekeeping.
+                </p>
+
+                <div class="grid grid-cols-1 gap-4">
+                    {{-- Airbnb iCal URL --}}
+                    <div>
+                        <x-form.label value="Airbnb Calendar URL (iCal)" />
+                        <x-form.input name="ical_airbnb_url" class="w-full" :value="old('ical_airbnb_url', $property->ical_airbnb_url ?? '')"
+                            placeholder="https://www.airbnb.com/calendar/ical/xxxxx.ics" />
+                        <p class="mt-1 text-xs text-gray-500">
+                            Find this in Airbnb → Your Listing → Availability → Export Calendar
+                        </p>
+                        <x-form.error :messages="$errors->get('ical_airbnb_url')" />
+                    </div>
+
+                    {{-- VRBO iCal URL --}}
+                    <div>
+                        <x-form.label value="VRBO Calendar URL (iCal)" />
+                        <x-form.input name="ical_vrbo_url" class="w-full" :value="old('ical_vrbo_url', $property->ical_vrbo_url ?? '')"
+                            placeholder="https://www.vrbo.com/ical/xxxxx.ics" />
+                        <p class="mt-1 text-xs text-gray-500">
+                            Find this in VRBO → Calendar → Export iCal
+                        </p>
+                        <x-form.error :messages="$errors->get('ical_vrbo_url')" />
+                    </div>
+
+                    {{-- Booking.com iCal URL --}}
+                    <div>
+                        <x-form.label value="Booking.com Calendar URL (iCal)" />
+                        <x-form.input name="ical_booking_url" class="w-full" :value="old('ical_booking_url', $property->ical_booking_url ?? '')"
+                            placeholder="https://admin.booking.com/hotel/hoteladmin/ical.html?xxxxx" />
+                        <p class="mt-1 text-xs text-gray-500">
+                            Find this in Booking.com Extranet → Rates & Availability → Sync Calendars
+                        </p>
+                        <x-form.error :messages="$errors->get('ical_booking_url')" />
+                    </div>
+
+                    @if($property->ical_last_synced_at)
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Last synced: {{ $property->ical_last_synced_at->diffForHumans() }}
+                        </p>
+                    @endif
+                </div>
+            </div>
+
             <div class="flex flex-col sm:flex-row gap-2 mt-6 sm:mt-8 sm:justify-end max-w-full">
                 <x-button x-bind:disabled="isGeocoding"
                     x-bind:class="isGeocoding ? 'opacity-60 cursor-not-allowed' : ''" class="w-full sm:w-auto whitespace-nowrap">
@@ -317,12 +368,36 @@
                     @endif
 
                     // Initialize Google Places Autocomplete (only if using Google provider)
-                    if (this.geocodingProvider === 'google' && typeof google !== 'undefined' && google.maps && google.maps.places) {
+                    this.initGooglePlaces();
+                },
+
+                initGooglePlaces() {
+                    if (this.geocodingProvider !== 'google') return;
+
+                    // Check if Google Maps is already loaded
+                    if (typeof google !== 'undefined' && google.maps && google.maps.places) {
                         this.autocompleteService = new google.maps.places.AutocompleteService();
-                        // Create a dummy div for PlacesService (required)
                         const mapDiv = document.createElement('div');
                         this.placesService = new google.maps.places.PlacesService(mapDiv);
+                        return;
                     }
+
+                    // Wait for Google Maps to load (it's loaded async)
+                    let attempts = 0;
+                    const maxAttempts = 50; // 5 seconds max wait
+                    const checkGoogle = setInterval(() => {
+                        attempts++;
+                        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                            clearInterval(checkGoogle);
+                            this.autocompleteService = new google.maps.places.AutocompleteService();
+                            const mapDiv = document.createElement('div');
+                            this.placesService = new google.maps.places.PlacesService(mapDiv);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(checkGoogle);
+                            console.warn('Google Maps failed to load, falling back to OpenStreetMap');
+                            this.geocodingProvider = 'openstreetmap';
+                        }
+                    }, 100);
                 },
 
                 handleAddressInput() {

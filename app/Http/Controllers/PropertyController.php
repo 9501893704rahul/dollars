@@ -145,6 +145,10 @@ class PropertyController extends Controller
             'geo_radius_m' => ['nullable', 'integer', 'min:50'],
             'photo'        => ['nullable', 'image', 'max:5120'],
             'remove_photo' => ['sometimes', 'boolean'],
+            // iCal calendar integration URLs
+            'ical_airbnb_url'  => ['nullable', 'url', 'max:500'],
+            'ical_vrbo_url'    => ['nullable', 'url', 'max:500'],
+            'ical_booking_url' => ['nullable', 'url', 'max:500'],
         ];
 
         if ($isAdmin) {
