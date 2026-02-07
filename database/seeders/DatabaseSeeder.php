@@ -14,6 +14,9 @@ class DatabaseSeeder extends Seeder
         $this->call(RoomSeeder::class);
         $this->call(TaskSeeder::class);
         
+        // Default branding settings (Room Ready logo, cyan theme)
+        $this->call(DefaultSettingsSeeder::class);
+        
         // Skip BulkDemoDataSeeder in production (requires faker)
         // $this->call(BulkDemoDataSeeder::class);
     }
