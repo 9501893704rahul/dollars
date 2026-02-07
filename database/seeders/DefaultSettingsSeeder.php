@@ -18,11 +18,20 @@ class DefaultSettingsSeeder extends Seeder
         // Copy logo files from public assets to storage if they don't exist
         $this->setupLogoFiles();
 
-        // Set default settings if they don't exist
-        $defaults = [
+        // Branding settings - always update these to ensure correct branding
+        $brandingSettings = [
             'site_name' => 'Room Ready',
             'theme_color' => '#06b6d4',
             'button_primary_color' => '#06b6d4',
+        ];
+
+        foreach ($brandingSettings as $key => $value) {
+            Setting::set($key, $value);
+            $this->command?->info("Set branding setting: {$key} = {$value}");
+        }
+
+        // Other default settings - only set if they don't exist
+        $defaults = [
             'button_success_color' => '#10b981',
             'button_danger_color' => '#ef4444',
             'button_warning_color' => '#f59e0b',
@@ -43,29 +52,25 @@ class DefaultSettingsSeeder extends Seeder
             // Only set if not already exists
             if (Setting::where('key', $key)->doesntExist()) {
                 Setting::set($key, $value);
-                $this->command->info("Set default setting: {$key}");
+                $this->command?->info("Set default setting: {$key}");
             }
         }
 
-        // Set logo paths if files exist and settings not already set
-        if (Setting::where('key', 'application_logo_path')->doesntExist()) {
-            if (Storage::disk('public')->exists('logos/clean-logo.png')) {
-                Setting::set('application_logo_path', 'logos/clean-logo.png');
-                $this->command->info('Set default logo path');
-            }
+        // Always set logo paths to the correct files
+        if (Storage::disk('public')->exists('logos/clean-logo.png')) {
+            Setting::set('application_logo_path', 'logos/clean-logo.png');
+            $this->command?->info('Set logo path: logos/clean-logo.png');
         }
 
-        if (Setting::where('key', 'favicon_path')->doesntExist()) {
-            if (Storage::disk('public')->exists('favicons/clean-logo-small.png')) {
-                Setting::set('favicon_path', 'favicons/clean-logo-small.png');
-                $this->command->info('Set default favicon path');
-            }
+        if (Storage::disk('public')->exists('favicons/clean-logo-small.png')) {
+            Setting::set('favicon_path', 'favicons/clean-logo-small.png');
+            $this->command?->info('Set favicon path: favicons/clean-logo-small.png');
         }
 
         // Clear settings cache
         Setting::clearCache();
 
-        $this->command->info('Default settings seeded successfully!');
+        $this->command?->info('Default settings seeded successfully!');
     }
 
     /**
@@ -86,7 +91,7 @@ class DefaultSettingsSeeder extends Seeder
                 'logos/clean-logo.png',
                 file_get_contents($sourceLogo)
             );
-            $this->command->info('Copied logo to storage');
+            $this->command?->info('Copied logo to storage');
         }
 
         // Copy favicon
@@ -96,7 +101,7 @@ class DefaultSettingsSeeder extends Seeder
                 'favicons/clean-logo-small.png',
                 file_get_contents($sourceFavicon)
             );
-            $this->command->info('Copied favicon to storage');
+            $this->command?->info('Copied favicon to storage');
         }
     }
 }
